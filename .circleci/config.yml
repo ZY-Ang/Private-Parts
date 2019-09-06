@@ -1,0 +1,66 @@
+# Javascript Node CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-javascript/ for more details
+#
+version: 2.1
+
+defaults: &config_project_defaults
+  working_directory: ~/repo
+  docker:
+    - image: node:8.11.3
+
+commands:
+  install_npm_latest:
+    description: "Installs the latest version of npm - Required for running npm installs on node 8.11.3."
+    steps:
+      - run:
+          name: Update npm to v2
+          command: npm install npm@2 -g
+      - run:
+          name: Update npm to latest
+          command: npm install npm@latest -g
+  install_webapp:
+    description: "Installs dependencies in preparation to build and deploy webapp"
+    steps:
+      - install_npm_latest
+      - checkout
+      - restore_cache:
+          name: Restore latest node_modules from cache
+          keys:
+            - webapp-v1-{{ .Branch }}-{{ checksum "webapp/package-lock.json" }}-{{ .Revision }}
+            - webapp-v1-{{ .Branch }}-{{ checksum "webapp/package-lock.json" }}
+            - webapp-v1-{{ .Branch }}
+            - webapp-v1
+      - run:
+          working_directory: ~/repo/webapp
+          command: npm install
+      - save_cache:
+          name: Save post-install node_modules into cache
+          key: webapp-v1-{{ .Branch }}-{{ checksum "webapp/package-lock.json" }}-{{ .Revision }}
+          paths:
+            - ~/repo/webapp/node_modules
+
+jobs:
+  webapp_build_deploy:
+    <<: *config_project_defaults
+    steps:
+      - install_webapp
+      - run:
+          working_directory: ~/repo/webapp
+          command: npm test
+      - run:
+          working_directory: ~/repo/webapp
+          command: npm run build
+      - run:
+          working_directory: ~/repo/webapp
+          command: ./node_modules/.bin/firebase deploy -P production --token=$FIREBASE_TOKEN
+          filters:
+            branches:
+              only:
+                - master
+
+workflows:
+  version: 2
+  master_flow:
+    jobs:
+      - webapp_build_deploy

@@ -1,0 +1,6 @@
+{
+  "projects": {
+    "default": "crawlers-42",
+    "production": "crawlers-42"
+  }
+}
