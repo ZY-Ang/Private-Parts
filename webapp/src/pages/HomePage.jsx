@@ -16,6 +16,7 @@ class HomePage extends React.Component {
         return (
             <div>
                 <img
+                    alt="Private Parts"
                     src={logo}
                     width={200}
                     height={200}
