@@ -9,6 +9,7 @@ export const firebaseConfig = {
 };
 
 export const ROUTE_HOME = '/';
+export const ROUTE_ABOUT = '/About';
 export const ROUTE_PRIVACY_POLICY = '/Privacy';
 export const ROUTE_TERMS = '/Terms';
 export const ROUTE_SIGN_OUT = '/SignOut';

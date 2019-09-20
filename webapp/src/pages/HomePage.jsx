@@ -1,5 +1,4 @@
 import React from 'react';
-import logo from '../logo512.png';
 import {connect} from "react-redux";
 import {compose} from "redux";
 
@@ -15,12 +14,6 @@ class HomePage extends React.Component {
     render() {
         return (
             <div>
-                <img
-                    alt="Private Parts"
-                    src={logo}
-                    width={200}
-                    height={200}
-                />
                 <div>
                     Home
                 </div>

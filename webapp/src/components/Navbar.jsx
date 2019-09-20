@@ -1,18 +1,43 @@
 import React from 'react';
 import {Link} from "react-router-dom";
-import {ROUTE_HOME, ROUTE_SIGN_OUT} from "../constants";
+import {ROUTE_ABOUT, ROUTE_HOME, ROUTE_SIGN_OUT} from "../constants";
+import logo from "../logo512.png";
+import {connect} from "react-redux";
+import {compose} from "redux";
 
 class Navbar extends React.Component {
     render() {
+        const {location} = this.props;
         return (
-            <div className="navbar">
-                <ul className="nav navbar-nav navbar-right">
-                    <li role="presentation" className="nav-item active"><Link to={ROUTE_HOME}>Home</Link></li>
-                    <li role="presentation" className="nav-item active"><Link to={ROUTE_SIGN_OUT}>Sign Out</Link></li>
-                </ul>
-            </div>
+            <nav className="navbar sticky-top navbar-expand-lg navbar-light bg-light">
+                <Link className="navbar-brand" to={ROUTE_HOME}>
+                    <img
+                        alt="Private Parts"
+                        src={logo}
+                        width={50}
+                        height={50}
+                    />
+                    <span className="ml-2">Private Parts</span>
+                </Link>
+                <button className="navbar-toggler" type="button" data-toggle="collapse"
+                        data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false"
+                        aria-label="Toggle navigation">
+                    <span className="navbar-toggler-icon"/>
+                </button>
+                <div className="collapse navbar-collapse" id="navbarNavAltMarkup">
+                    <div className="navbar-nav">
+                        <Link className={`nav-item nav-link${location === ROUTE_HOME ? ' active' : ''}`} to={ROUTE_HOME}>Home</Link>
+                        <Link className={`nav-item nav-link${location === ROUTE_ABOUT ? ' active' : ''}`} to={ROUTE_ABOUT}>About</Link>
+                        <Link className={`nav-item nav-link${location === ROUTE_HOME ? ' active' : ''}`} to={ROUTE_SIGN_OUT}>Sign Out</Link>
+                    </div>
+                </div>
+            </nav>
         );
     }
 }
 
-export default Navbar;
+const mapStateToProps = state => ({
+    user: state.appState.user
+});
+
+export default compose(connect(mapStateToProps))(Navbar);

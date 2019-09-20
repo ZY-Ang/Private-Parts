@@ -205,3 +205,12 @@
 #root {
   height: 100vh;
 }
+
+.App {
+  height: 100%;
+}
+
+.footer {
+  width: 100%;
+  line-height: 40px;
+}
