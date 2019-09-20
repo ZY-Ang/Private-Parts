@@ -1,5 +1,3 @@
-# Javascript Node CircleCI 2.0 configuration file
-#
 # Check https://circleci.com/docs/2.0/language-javascript/ for more details
 #
 version: 2.1
@@ -7,6 +5,7 @@ version: 2.1
 defaults: &config_project_defaults
   working_directory: ~/repo
   docker:
+    # Change to python or whatever if you need it installed for your builds
     - image: node:8.11.3
 
 commands:
