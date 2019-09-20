@@ -1,6 +1,6 @@
 {
   "projects": {
-    "default": "crawlers-42",
-    "production": "crawlers-42"
+    "default": "private-parts",
+    "production": "private-parts"
   }
 }
