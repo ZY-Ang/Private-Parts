@@ -53,13 +53,13 @@ jobs:
       - run:
           working_directory: ~/repo/webapp
           command: ./node_modules/.bin/firebase deploy -P production --token=$FIREBASE_TOKEN
-          filters:
-            branches:
-              only:
-                - master
 
 workflows:
   version: 2
   master_flow:
     jobs:
-      - webapp_build_deploy
+      - webapp_build_deploy:
+          filters:
+            branches:
+              only:
+                - master
