@@ -57,7 +57,7 @@ class DashboardPage extends React.Component {
 		const {user} = this.props;
 		return(
 			<div className="h-100 d-flex flex-column align-items-center justify-content-center text-center">
-				<div className="alert alert-warning" role="alert">
+				<div className="alert alert-danger" role="alert">
 					This should be a dashboard of the stuff to show the user. Not sure what we have yet so this is blank.
 				</div>
 				{
