@@ -15,3 +15,8 @@ export const ROUTE_TERMS = '/Terms';
 export const ROUTE_SIGN_OUT = '/SignOut';
 export const ROUTE_NOT_FOUND = '/404';
 export const ROUTE_WILDCARD = '*';
+
+export const COLOR_FACEBOOK = '#3B5998';
+export const COLOR_TWITTER = '#38A1F3';
+export const COLOR_INSTAGRAM = '#C13584';
+export const COLOR_GOOGLE_PANTONE = ['#4285F4', '#DB4437', '#F4B400', '#0F9D58'];

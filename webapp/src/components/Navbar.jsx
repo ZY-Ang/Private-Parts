@@ -7,9 +7,9 @@ import {compose} from "redux";
 
 class Navbar extends React.Component {
     render() {
-        const {location} = this.props;
+        const {location, user} = this.props;
         return (
-            <nav className="navbar sticky-top navbar-expand-lg navbar-light bg-light">
+            <nav className="navbar sticky-top navbar-expand-sm navbar-light bg-light" style={{minHeight: 76}}>
                 <Link className="navbar-brand" to={ROUTE_HOME}>
                     <img
                         alt="Private Parts"
@@ -24,12 +24,17 @@ class Navbar extends React.Component {
                         aria-label="Toggle navigation">
                     <span className="navbar-toggler-icon"/>
                 </button>
-                <div className="collapse navbar-collapse" id="navbarNavAltMarkup">
-                    <div className="navbar-nav">
+                <div className="collapse navbar-collapse bg-light" id="navbarNavAltMarkup">
+                    <div className="navbar-nav mr-auto">
                         <Link className={`nav-item nav-link${location === ROUTE_HOME ? ' active' : ''}`} to={ROUTE_HOME}>Home</Link>
                         <Link className={`nav-item nav-link${location === ROUTE_ABOUT ? ' active' : ''}`} to={ROUTE_ABOUT}>About</Link>
-                        <Link className={`nav-item nav-link${location === ROUTE_HOME ? ' active' : ''}`} to={ROUTE_SIGN_OUT}>Sign Out</Link>
                     </div>
+                    {
+                        user &&
+                        <div className="navbar-nav">
+                            <Link className={`nav-item nav-link${location === ROUTE_HOME ? ' active' : ''}`} to={ROUTE_SIGN_OUT}>Sign Out</Link>
+                        </div>
+                    }
                 </div>
             </nav>
         );
