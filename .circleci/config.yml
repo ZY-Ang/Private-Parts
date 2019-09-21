@@ -1,8 +1,8 @@
-# Check https://circleci.com/docs/2.0/language-javascript/ for more details
+# Check https://circleci.com/docs/2.0/ for more details
 #
 version: 2.1
 
-defaults: &config_project_defaults
+defaults: &config_frontend_defaults
   working_directory: ~/repo
   docker:
     # Change to python or whatever if you need it installed for your builds
@@ -41,7 +41,7 @@ commands:
 
 jobs:
   webapp_build_deploy:
-    <<: *config_project_defaults
+    <<: *config_frontend_defaults
     steps:
       - install_webapp
       - run:
