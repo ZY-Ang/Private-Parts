@@ -2,11 +2,16 @@
 #
 version: 2.1
 
-defaults: &config_frontend_defaults
+defaults: &config_project_defaults
   working_directory: ~/repo
-  docker:
-    # Change to python or whatever if you need it installed for your builds
-    - image: node:8.11.3
+
+executors:
+  node_default:
+    docker:
+      - image: circleci/node:8.11.3
+  python_default:
+    docker:
+      - image: circleci/python:3.7.4
 
 commands:
   install_npm_latest:
@@ -14,10 +19,10 @@ commands:
     steps:
       - run:
           name: Update npm to v2
-          command: npm install npm@2 -g
+          command: sudo npm install npm@2 -g
       - run:
           name: Update npm to latest
-          command: npm install npm@latest -g
+          command: sudo npm install npm@latest -g
   install_webapp:
     description: "Installs dependencies in preparation to build and deploy webapp"
     steps:
@@ -26,22 +31,23 @@ commands:
       - restore_cache:
           name: Restore latest node_modules from cache
           keys:
-            - webapp-v1-{{ .Branch }}-{{ checksum "webapp/package-lock.json" }}-{{ .Revision }}
-            - webapp-v1-{{ .Branch }}-{{ checksum "webapp/package-lock.json" }}
-            - webapp-v1-{{ .Branch }}
-            - webapp-v1
+            - webapp-v1-{{ arch }}-{{ .Branch }}-{{ checksum "webapp/package-lock.json" }}-{{ .Revision }}
+            - webapp-v1-{{ arch }}-{{ .Branch }}-{{ checksum "webapp/package-lock.json" }}
+            - webapp-v1-{{ arch }}-{{ .Branch }}
+            - webapp-v1-{{ arch }}
       - run:
           working_directory: ~/repo/webapp
           command: npm install
       - save_cache:
           name: Save post-install node_modules into cache
-          key: webapp-v1-{{ .Branch }}-{{ checksum "webapp/package-lock.json" }}-{{ .Revision }}
+          key: webapp-v1-{{ arch }}-{{ .Branch }}-{{ checksum "webapp/package-lock.json" }}-{{ .Revision }}
           paths:
             - ~/repo/webapp/node_modules
 
 jobs:
   webapp_build_deploy:
-    <<: *config_frontend_defaults
+    <<: *config_project_defaults
+    executor: node_default
     steps:
       - install_webapp
       - run:
