@@ -59,6 +59,42 @@ jobs:
       - run:
           working_directory: ~/repo/webapp
           command: ./node_modules/.bin/firebase deploy -P production --token=$FIREBASE_TOKEN
+  server_install_deploy:
+    <<: *config_project_defaults
+    executor: python_default
+    steps:
+      - checkout
+      - run:
+          name: Create ssh key file
+          command: echo $PP_WS_KEY | base64 -d > ~/pp-ws-key.pem
+      - run:
+          name: Set ssh key file permissions
+          working_directory: ~/
+          command: chmod 400 pp-ws-key.pem
+      - run:
+          name: Install Pip3
+          command: |
+            ssh -o StrictHostKeyChecking=no -i "~/pp-ws-key.pem" ubuntu@$SSH_HOST 'sudo apt update && sudo apt -y install python3-pip'
+      - run:
+          name: killall processes belonging to ubuntu - stop previous server, if any
+          command: |
+            ssh -o StrictHostKeyChecking=no -i "~/pp-ws-key.pem" ubuntu@$SSH_HOST 'sudo killall -u ubuntu' || true
+      - run:
+          name: Delete all files
+          command: |
+            ssh -o StrictHostKeyChecking=no -i "~/pp-ws-key.pem" ubuntu@$SSH_HOST 'rm -rf ./* && mkdir backend && ls -aL'
+      - run:
+          name: Send Files to Server
+          command: |
+            scp -r -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i "~/pp-ws-key.pem" ~/repo/backend/* ubuntu@$SSH_HOST:/home/ubuntu/backend/ || true
+      - run:
+          name: Install
+          command: |
+            ssh -o StrictHostKeyChecking=no -i "~/pp-ws-key.pem" ubuntu@$SSH_HOST 'cd ~/backend && pip3 install -r requirements.txt' || true
+      - run:
+          name: Start and exit
+          command: |
+            ssh -o StrictHostKeyChecking=no -i "~/pp-ws-key.pem" ubuntu@$SSH_HOST "(nohup waitress-serve --host 127.0.0.1 --port 8080 --call 'backend:create_app') &" || true
 
 workflows:
   version: 2
@@ -69,3 +105,10 @@ workflows:
             branches:
               only:
                 - master
+                - ci
+      - server_install_deploy:
+          filters:
+            branches:
+              only:
+                - master
+                - ci
