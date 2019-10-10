@@ -72,9 +72,9 @@ jobs:
           working_directory: ~/
           command: chmod 400 pp-ws-key.pem
       - run:
-          name: Install Pip3
+          name: Install Pip3 and nginx
           command: |
-            ssh -o StrictHostKeyChecking=no -i "~/pp-ws-key.pem" ubuntu@$SSH_HOST 'sudo apt update && sudo apt -y install python3-pip'
+            ssh -o StrictHostKeyChecking=no -i "~/pp-ws-key.pem" ubuntu@$SSH_HOST 'sudo apt update && sudo apt install -y python3-pip && sudo apt install -y nginx'
       - run:
           name: killall processes belonging to ubuntu - stop previous server, if any
           command: |
@@ -88,13 +88,21 @@ jobs:
           command: |
             scp -r -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i "~/pp-ws-key.pem" ~/repo/backend/* ubuntu@$SSH_HOST:/home/ubuntu/backend/ || true
       - run:
+          name: Move nginx config to config directory
+          command: |
+            ssh -o StrictHostKeyChecking=no -i "~/pp-ws-key.pem" ubuntu@$SSH_HOST 'sudo mv -f ~/backend/nginx.conf /etc/nginx/nginx.conf'
+      - run:
+          name: (Re)Start nginx
+          command: |
+            ssh -o StrictHostKeyChecking=no -i "~/pp-ws-key.pem" ubuntu@$SSH_HOST 'sudo /etc/init.d/nginx restart'
+      - run:
           name: Install
           command: |
             ssh -o StrictHostKeyChecking=no -i "~/pp-ws-key.pem" ubuntu@$SSH_HOST 'cd ~/backend && pip3 install -r requirements.txt' || true
       - run:
           name: Start and exit
           command: |
-            ssh -o StrictHostKeyChecking=no -i "~/pp-ws-key.pem" ubuntu@$SSH_HOST "(nohup waitress-serve --host 127.0.0.1 --port 8080 --call 'backend:create_app') &" || true
+            ssh -o StrictHostKeyChecking=no -i "~/pp-ws-key.pem" ubuntu@$SSH_HOST "cd ~/backend && (nohup flask run) &" || true
 
 workflows:
   version: 2
