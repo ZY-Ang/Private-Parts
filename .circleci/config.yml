@@ -76,6 +76,9 @@ jobs:
           command: |
             ssh -o StrictHostKeyChecking=no -i "~/pp-ws-key.pem" ubuntu@$SSH_HOST 'sudo apt update && sudo apt install -y python3-pip && sudo apt install -y nginx'
       - run:
+          name: Create firebase admin private key json credentials
+          command: echo $GOOGLE_APPLICATION_CREDENTIALS > ~/repo/backend/firebase-adminsdk.json
+      - run:
           name: killall processes belonging to ubuntu - stop previous server, if any
           command: |
             ssh -o StrictHostKeyChecking=no -i "~/pp-ws-key.pem" ubuntu@$SSH_HOST 'sudo killall -u ubuntu' || true
@@ -102,7 +105,7 @@ jobs:
       - run:
           name: Start and exit
           command: |
-            ssh -o StrictHostKeyChecking=no -i "~/pp-ws-key.pem" ubuntu@$SSH_HOST "FLASK_APP=backend FLASK_ENV=development nohup ~/.local/bin/flask run > flask.out 2> flask.err & "
+            ssh -o StrictHostKeyChecking=no -i "~/pp-ws-key.pem" ubuntu@$SSH_HOST "FLASK_APP=backend FLASK_ENV=development GOOGLE_APPLICATION_CREDENTIALS=/home/ubuntu/backend/firebase-adminsdk.json FIREBASE_DATABASE_URL=https://private-parts.firebaseio.com nohup ~/.local/bin/flask run > flask.out 2> flask.err & "
 
 workflows:
   version: 2

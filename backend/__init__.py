@@ -1,4 +1,7 @@
 from flask import Flask, jsonify
+import os
+import firebase_admin
+from firebase_admin import credentials, db
 
 
 def create_app():
@@ -6,6 +9,11 @@ def create_app():
     app = Flask(__name__)
     app.secret_key = b'cs3235privatepartsyo'
 
+    # Initialize firebase
+    cred = credentials.Certificate(os.environ['GOOGLE_APPLICATION_CREDENTIALS'])
+    firebase_admin.initialize_app(cred, {
+        'databaseURL': os.environ['FIREBASE_DATABASE_URL']  # Or whatever your database URL is
+    })
     # register api commands
     from . import api
     app.register_blueprint(api.bp)
@@ -27,5 +35,7 @@ def create_app():
 
     @app.route('/')
     def index():
-        return jsonify({'tasks': tasks})
+        tasks_snapshot = db.reference('tasks').get()
+        return jsonify(tasks_snapshot)
+
     return app
