@@ -12,7 +12,7 @@ def create_app():
 
     # Initialize firebase
     cred = credentials.Certificate(os.environ['GOOGLE_APPLICATION_CREDENTIALS'])
-    firebase_admin.initialize_app(cred, {'databaseURL': os.environ['FIREBASE_DATABASE_URL']})
+    firebase_admin.initialize_app(cred, {'databaseURL': 'https://private-parts.firebaseio.com'})
     # register api commands
     from . import api
     app.register_blueprint(api.bp)

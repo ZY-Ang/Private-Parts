@@ -105,7 +105,7 @@ jobs:
       - run:
           name: Start and exit
           command: |
-            ssh -o StrictHostKeyChecking=no -i "~/pp-ws-key.pem" ubuntu@$SSH_HOST "FLASK_APP=backend FLASK_ENV=development GOOGLE_APPLICATION_CREDENTIALS=/home/ubuntu/backend/firebase-adminsdk.json FIREBASE_DATABASE_URL=https://private-parts.firebaseio.com nohup ~/.local/bin/flask run > flask.out 2> flask.err & "
+            ssh -o StrictHostKeyChecking=no -i "~/pp-ws-key.pem" ubuntu@$SSH_HOST "FLASK_APP=backend FLASK_ENV=development GOOGLE_APPLICATION_CREDENTIALS=/home/ubuntu/backend/firebase-adminsdk.json nohup ~/.local/bin/flask run > flask.out 2> flask.err & "
 
 workflows:
   version: 2

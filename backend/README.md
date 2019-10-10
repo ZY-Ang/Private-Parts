@@ -5,10 +5,21 @@ Skeleton Rest API endpoints written in Python 3.6.4 using Flask but should work 
 It is advisable to create a virtual environment for this flask application. To use create one,
 use [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) or `pyenv`
 
-### Without IDEA
-Install Flask in the virtual environment: `pip install flask`
+### CLI
+1. Install dependencies in your favourite python environment: `pip install -r requirements.txt`
 
-[Set variables](https://flask.palletsprojects.com/en/1.1.x/tutorial/factory/) from command line for Flask application (For Windows): `set FLASK_APP=backend`, `set FLASK_ENV=development` 
+2. Download private key file for firebase admin API (Service Account) from our project at [console.firebase.google.com](https://console.firebase.google.com)
+    - Go to our project dashboard, then `Click the settings icon in top left`>`Project Settings`>`Service accounts`>`Generate new private key`
+
+3. [Set environment variables](https://flask.palletsprojects.com/en/1.1.x/tutorial/factory/) for application:
+     - Windows
+         - `set FLASK_APP=backend`,
+         - `set FLASK_ENV=development`,
+         - `set GOOGLE_APPLICATION_CREDENTIALS=<Path To Private Key File>`
+     - Linux/ Debian
+         - `FLASK_APP=backend`,
+         - `FLASK_ENV=development`,
+         - `GOOGLE_APPLICATION_CREDENTIALS=<Path To Private Key File>`
 
 Run Flash application: `flask run`
 
