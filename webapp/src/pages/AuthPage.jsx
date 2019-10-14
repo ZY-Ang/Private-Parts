@@ -2,7 +2,7 @@ import React from 'react';
 import FaIcon from "../components/FaIcon";
 import AppRedux from "../redux";
 import {byPropKey} from "../utils";
-import Facebook from "../Facebook";
+import firebase from "firebase";
 
 const FACEBOOK_SCOPES = ['public_profile', 'email'].sort().join(', ');
 
@@ -25,26 +25,44 @@ class AuthPage extends React.Component {
 			type: 'facebook',
 			facebook: null
 		};
-		Facebook.getLoginStatus()
-			.then(({status, authResponse}) => {
-				if (status === 'connected') {
-					AppRedux.dispatch({type: 'setUser', user: {
-						...user,
-						facebook: authResponse
-					}});
-				} else {
-					return Facebook.login({scope: FACEBOOK_SCOPES, return_scopes: true})
-						.then(({status, authResponse}) => {
-							if (status === 'connected') {
-								AppRedux.dispatch({type: 'setUser', user: {
-									...user,
-									facebook: authResponse
-								}});
-							}
-						})
-				}
-			})
-			.catch(err => console.error(err));
+		const provider = new firebase.auth.FacebookAuthProvider();
+		provider.addScope('email');
+		provider.addScope('public_profile');
+		provider.setCustomParameters({
+			'display': 'popup'
+		});
+		firebase.auth().signInWithPopup(provider)
+			.then(res => {
+				AppRedux.dispatch({type: 'setUser', user: {
+					...user,
+					facebook: res.user
+				}});
+			});
+		// Old facebook code - fb-sdk-wrapper
+		// Facebook.getLoginStatus()
+		// 	.then(({status, authResponse}) => {
+		// 		if (status === 'connected') {
+		// 			AppRedux.dispatch({type: 'setUser', user: {
+		// 				...user,
+		// 				facebook: authResponse
+		// 			}});
+		// 			return authResponse.userID;
+		// 		} else {
+		// 			return Facebook.login({scope: FACEBOOK_SCOPES, return_scopes: true})
+		// 				.then(({status, authResponse}) => {
+		// 					if (status === 'connected') {
+		// 						AppRedux.dispatch({type: 'setUser', user: {
+		// 							...user,
+		// 							facebook: authResponse
+		// 						}});
+		// 						return authResponse.userID;
+		// 					}
+		// 				});
+		// 		}
+		// 	})
+		// 	.then(userID => Facebook.api(`/${userID}/`))
+		// 	.then(response => console.log({response}))
+		// 	.catch(err => console.error(err));
 	};
 
 	signInWithTwitter = () => {
@@ -93,17 +111,6 @@ class AuthPage extends React.Component {
 							<FaIcon icon={['fab', 'facebook-f']}/>
 						</div>
 						<div className="btn-auth-text btn-auth-social-text">Sign in With Facebook</div>
-					</button>
-				</div>
-				<div className="btn-login-twitter mt-3">
-					<button
-						className="btn-auth-social"
-						onClick={this.signInWithTwitter}
-					>
-						<div className="btn-auth-social-icon">
-							<FaIcon icon={['fab', 'twitter']}/>
-						</div>
-						<div className="btn-auth-text btn-auth-social-text">Sign in With Twitter</div>
 					</button>
 				</div>
 				<form

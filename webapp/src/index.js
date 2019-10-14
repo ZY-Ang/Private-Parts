@@ -7,6 +7,17 @@ import App from './App';
 import {Provider} from 'react-redux';
 import store from './redux';
 import * as serviceWorker from './serviceWorker';
+import firebase from "firebase";
+
+firebase.initializeApp({
+	apiKey: "AIzaSyBXmpag_PiuvkNQIjb2mgv_ZpO9FDferLo",
+	authDomain: "private-parts.firebaseapp.com",
+	databaseURL: "https://private-parts.firebaseio.com",
+	projectId: "private-parts",
+	storageBucket: "private-parts.appspot.com",
+	messagingSenderId: "519956892611",
+	appId: "1:519956892611:web:b05bb205ee55a39d3a4b76"
+});
 
 ReactDOM.render(
     <Provider store={store}>

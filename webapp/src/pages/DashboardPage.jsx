@@ -70,8 +70,8 @@ class DashboardPage extends React.Component {
 				{
 					user.type === 'facebook' &&
 					<div>
-						<p>Your facebook access token:</p>
-						<code>{user.facebook.accessToken}</code>
+						<p>Your facebook email:</p>
+						<code>{user.facebook.email}</code>
 						<p>Other information may be available in stdout</p>
 					</div>
 				}

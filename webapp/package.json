@@ -9,6 +9,7 @@
     "@fortawesome/react-fontawesome": "^0.1.4",
     "bootstrap": "^4.3.1",
     "fb-sdk-wrapper": "^1.0.3",
+    "firebase": "^7.2.0",
     "firebase-tools": "^7.3.1",
     "jquery": "^3.4.1",
     "moment": "^2.24.0",

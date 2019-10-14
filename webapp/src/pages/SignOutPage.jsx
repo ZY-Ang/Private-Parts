@@ -3,6 +3,7 @@ import Facebook from '../Facebook';
 import {withRouter} from 'react-router-dom';
 import AppRedux from "../redux";
 import {ROUTE_HOME} from "../constants";
+import firebase from "firebase";
 
 class SignOutPage extends React.Component {
     state = {
@@ -14,13 +15,7 @@ class SignOutPage extends React.Component {
         Facebook.logout().catch(console.warn);
         AppRedux.dispatch({type: 'signOut'});
         window.localStorage.clear();
-        this.setState({
-            timeouts: [
-                setTimeout(() => this.setState({redirectIn: 2}), 1000),
-                setTimeout(() => this.setState({redirectIn: 1}), 2000),
-                setTimeout(this.redirectToHome, 3000)
-            ]
-        });
+        firebase.auth().signOut().then(this.redirectToHome);
     }
 
     redirectToHome = async () => {
