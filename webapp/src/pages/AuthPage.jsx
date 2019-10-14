@@ -3,6 +3,7 @@ import FaIcon from "../components/FaIcon";
 import AppRedux from "../redux";
 import {byPropKey} from "../utils";
 import firebase from "firebase/app";
+import {breachedAccount} from 'hibp';
 
 // const FACEBOOK_SCOPES = ['public_profile', 'email'].sort().join(', ');
 

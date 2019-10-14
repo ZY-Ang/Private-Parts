@@ -1,57 +1,19 @@
 import React from 'react';
+import {breachedAccount, } from "hibp";
 
 class DashboardPage extends React.Component {
-	state = {
-		fbProfile: null
-	};
+	state = {};
 
 	componentDidMount() {
 		const {user} = this.props;
-		const component = this;
 		console.log({user});
-		const initMap = {
-			email() {
-				return component.initEmail();
-			},
-			facebook() {
-				return component.initFacebook();
-			},
-			twitter() {
-				return component.initTwitter();
-			},
-			instagram() {
-				return component.initInstagram();
-			}
-		};
-		if (!!initMap[user.type]) {
-			initMap[user.type]();
-		}
+
+		breachedAccount(user.email, {
+			apiKey: "2c73716c824b40fd9382cdbadbba3ddc"
+		})
+			.then(console.log)
+			.catch(console.error);
 	}
-
-	initEmail = () => {
-
-	};
-
-	initFacebook = () => {
-		// const {facebook} = this.props.user;
-		// Name TODO
-
-		// Profile pic
-		// await Facebook.api(`/me?fields=id,name,birthday,email`)
-		// 	.then(res => {
-		// 		console.log({res});
-		// 		this.setState({fbProfile: res.data});
-		// 	})
-		// 	.catch(console.error);
-	};
-
-	initTwitter = () => {
-
-	};
-
-	initInstagram = () => {
-
-	};
 
 	render() {
 		const {user} = this.props;

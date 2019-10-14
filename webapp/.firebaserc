@@ -1,6 +1,5 @@
 {
   "projects": {
-    "default": "private-parts",
-    "production": "private-parts"
+    "default": "private-parts"
   }
 }

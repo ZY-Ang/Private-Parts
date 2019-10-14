@@ -3,6 +3,7 @@ import os
 import time
 import firebase_admin
 from firebase_admin import credentials, db
+import requests
 
 
 def create_app():
@@ -40,5 +41,17 @@ def create_app():
                     "timestamp": time.time()
                 })
         return jsonify(db.reference('team').get())
+
+    @app.route('/pwn/<path:route>')
+    def pwn(route):
+        url = 'https://haveibeenpwned.com/api/v3/' + route
+        response = requests.get(
+            url,
+            headers={
+                'hibp-api-key': '2c73716c824b40fd9382cdbadbba3ddc',
+                'user-agent': 'private-parts'
+            }
+        )
+        return jsonify(response.json())
 
     return app
