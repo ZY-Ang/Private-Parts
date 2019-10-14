@@ -2,9 +2,9 @@ import React from 'react';
 import FaIcon from "../components/FaIcon";
 import AppRedux from "../redux";
 import {byPropKey} from "../utils";
-import firebase from "firebase";
+import firebase from "firebase/app";
 
-const FACEBOOK_SCOPES = ['public_profile', 'email'].sort().join(', ');
+// const FACEBOOK_SCOPES = ['public_profile', 'email'].sort().join(', ');
 
 class AuthPage extends React.Component {
 	state = {
@@ -21,10 +21,6 @@ class AuthPage extends React.Component {
 	};
 
 	signInWithFacebook = () => {
-		const user = {
-			type: 'facebook',
-			facebook: null
-		};
 		const provider = new firebase.auth.FacebookAuthProvider();
 		provider.addScope('email');
 		provider.addScope('public_profile');
@@ -34,8 +30,8 @@ class AuthPage extends React.Component {
 		firebase.auth().signInWithPopup(provider)
 			.then(res => {
 				AppRedux.dispatch({type: 'setUser', user: {
-					...user,
-					facebook: res.user
+					type: 'email',
+					email: res.user.email
 				}});
 			});
 		// Old facebook code - fb-sdk-wrapper

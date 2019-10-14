@@ -3,7 +3,7 @@ import Facebook from '../Facebook';
 import {withRouter} from 'react-router-dom';
 import AppRedux from "../redux";
 import {ROUTE_HOME} from "../constants";
-import firebase from "firebase";
+import firebase from "firebase/app";
 
 class SignOutPage extends React.Component {
     state = {

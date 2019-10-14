@@ -68,20 +68,6 @@ class DashboardPage extends React.Component {
 					</div>
 				}
 				{
-					user.type === 'facebook' &&
-					<div>
-						<p>Your facebook email:</p>
-						<code>{user.facebook.email}</code>
-						<p>Other information may be available in stdout</p>
-					</div>
-				}
-				{
-					user.type === 'twitter' &&
-					<div>
-						<p>Work in progress</p>
-					</div>
-				}
-				{
 					user.type === 'instagram' &&
 					<div>
 						<p>Your instagram username:</p>

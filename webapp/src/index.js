@@ -7,7 +7,8 @@ import App from './App';
 import {Provider} from 'react-redux';
 import store from './redux';
 import * as serviceWorker from './serviceWorker';
-import firebase from "firebase";
+import firebase from "firebase/app";
+import 'firebase/auth';
 
 firebase.initializeApp({
 	apiKey: "AIzaSyBXmpag_PiuvkNQIjb2mgv_ZpO9FDferLo",
