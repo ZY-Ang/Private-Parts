@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
 import os
 import time
 import firebase_admin
@@ -8,7 +8,7 @@ import requests
 
 def create_app():
     """Create and configure an instance of the Flask application."""
-    app = Flask(__name__)
+    app = Flask(__name__, static_folder='react')
     app.secret_key = b'cs3235privatepartsyo'
 
     # Initialize firebase
@@ -18,8 +18,8 @@ def create_app():
     from . import api
     app.register_blueprint(api.bp)
 
-    @app.route('/')
-    def index():
+    @app.route('/tasks')
+    def tasks():
         # Use the firebase admin for python docs for "realtime database"
         tasks_snapshot = db.reference('tasks').get()
         return jsonify(tasks_snapshot)
@@ -53,5 +53,17 @@ def create_app():
             }
         )
         return jsonify(response.json())
+
+    @app.route('/', defaults={'path': ''})
+    @app.route('/<path:path>')
+    def index(path):
+        if path != "" and os.path.exists(app.static_folder + '/' + path):
+            return send_from_directory(app.static_folder, path)
+        else:
+            return send_from_directory(app.static_folder, 'index.html')
+
+    # @app.errorhandler(404)
+    # def error404():
+    #     return send_from_directory(app.static_folder, 'index.html')
 
     return app

@@ -8,25 +8,15 @@ defaults: &config_project_defaults
 executors:
   node_default:
     docker:
-      - image: circleci/node:8.11.3
+      - image: circleci/node:lts
   python_default:
     docker:
       - image: circleci/python:3.7.4
 
 commands:
-  install_npm_latest:
-    description: "Installs the latest version of npm - Required for running npm installs on node 8.11.3."
-    steps:
-      - run:
-          name: Update npm to v2
-          command: sudo npm install npm@2 -g
-      - run:
-          name: Update npm to latest
-          command: sudo npm install npm@latest -g
   install_webapp:
     description: "Installs dependencies in preparation to build and deploy webapp"
     steps:
-      - install_npm_latest
       - checkout
       - restore_cache:
           name: Restore latest node_modules from cache
@@ -38,11 +28,15 @@ commands:
       - run:
           working_directory: ~/repo/webapp
           command: npm install
+      - run:
+          working_directory: ~/repo/webapp/functions
+          command: npm install
       - save_cache:
           name: Save post-install node_modules into cache
           key: webapp-v1-{{ arch }}-{{ .Branch }}-{{ checksum "webapp/package-lock.json" }}-{{ .Revision }}
           paths:
             - ~/repo/webapp/node_modules
+            - ~/repo/webapp/functions/node_modules
 
 jobs:
   webapp_build_deploy:
@@ -58,8 +52,20 @@ jobs:
           command: npm run build
       - run:
           working_directory: ~/repo/webapp
-          command: ./node_modules/.bin/firebase deploy --token=$FIREBASE_TOKEN
-  server_install_deploy:
+          command: env -u GOOGLE_APPLICATION_CREDENTIALS ./node_modules/.bin/firebase deploy --token=$FIREBASE_TOKEN
+# Uncomment below if deploying to ec2
+#      - run:
+#          name: Create ssh key file
+#          command: echo $PP_WS_KEY | base64 -d > ~/pp-ws-key.pem
+#      - run:
+#          name: Set ssh key file permissions
+#          working_directory: ~/
+#          command: chmod 400 ~/pp-ws-key.pem && chmod 755 ~
+#      - run:
+#          name: Send Files to Server
+#          command: |
+#            scp -r -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i "~/pp-ws-key.pem" ~/repo/webapp/build/* ubuntu@$SSH_HOST:/home/ubuntu/backend/react/ || true
+  server_deploy:
     <<: *config_project_defaults
     executor: python_default
     steps:
@@ -111,15 +117,17 @@ workflows:
   version: 2
   master_flow:
     jobs:
+      - server_deploy:
+          filters:
+            branches:
+              only:
+                - master
+                - ci
       - webapp_build_deploy:
           filters:
             branches:
               only:
                 - master
                 - ci
-      - server_install_deploy:
-          filters:
-            branches:
-              only:
-                - master
-                - ci
+          requires:
+            - server_deploy

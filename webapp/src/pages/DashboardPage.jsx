@@ -1,5 +1,11 @@
 import React from 'react';
-import {breachedAccount, } from "hibp";
+import axios from "axios";
+
+const hibp = axios.create({
+	baseURL: process.env.NODE_ENV === 'production'
+		? "https://asia-east2-private-parts.cloudfunctions.net/api/hibp/"
+		: "http://ec2-18-140-183-198.ap-southeast-1.compute.amazonaws.com/pwn/"
+});
 
 class DashboardPage extends React.Component {
 	state = {};
@@ -8,9 +14,7 @@ class DashboardPage extends React.Component {
 		const {user} = this.props;
 		console.log({user});
 
-		breachedAccount(user.email, {
-			apiKey: "2c73716c824b40fd9382cdbadbba3ddc"
-		})
+		hibp.get(`/breachedaccount/${encodeURIComponent(user.email)}`)
 			.then(console.log)
 			.catch(console.error);
 	}

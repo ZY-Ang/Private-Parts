@@ -3,7 +3,6 @@ import FaIcon from "../components/FaIcon";
 import AppRedux from "../redux";
 import {byPropKey} from "../utils";
 import firebase from "firebase/app";
-import {breachedAccount} from 'hibp';
 
 // const FACEBOOK_SCOPES = ['public_profile', 'email'].sort().join(', ');
 
@@ -60,13 +59,6 @@ class AuthPage extends React.Component {
 		// 	.then(userID => Facebook.api(`/${userID}/`))
 		// 	.then(response => console.log({response}))
 		// 	.catch(err => console.error(err));
-	};
-
-	signInWithTwitter = () => {
-		AppRedux.dispatch({type: 'setUser', user: {
-			type: 'twitter',
-			twitter: 1
-		}});
 	};
 
 	signInWithInstagram = e => {
