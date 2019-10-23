@@ -126,9 +126,10 @@ class Scraper:
         queue_ref = db.reference('queue')
         for url in urls_to_add:
             try:
-                existing_url = db.reference('data').order_by_child('url').equal_to(url).get()
+                existing_url_data = db.reference('data').order_by_child('url').equal_to(url).get()
+                existing_url_queue = db.reference('data').order_by_value().equal_to(url).get()
                 print(url + " added to queue")
-                if len(existing_url.keys()) == 0:
+                if len(existing_url_data.keys()) == 0 and len(existing_url_queue.keys()) == 0:
                     queue_ref.push(url)
             except Exception as e:
                 print("URL " + url + " Add to queue failed: ", e, flush=True)
