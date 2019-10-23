@@ -27,10 +27,6 @@ class Scraper:
         """
         :param url_string: A url to be accessed
         :return: site data for a given urlString. Performs all necessary low level socket-http stuff
-        Format: {
-            response_time: <float>seconds,
-            response: <string>httpResponse
-        }
         """
         print("get_site(" + str(url_string) + ")")
         url = urlparse(url_string)
@@ -42,18 +38,25 @@ class Scraper:
             response = requests.get(url_string)
             if "text/html" in response.headers['content-type']:
                 add_to_queue = []
-                soup = BeautifulSoup(response.content)
+                soup = BeautifulSoup(response.content, "html.parser")
                 return_value["content_type"] = "html"
                 return_value["text"] = soup.body.text
+                print("body.text = " + return_value["text"])
                 for link in soup.findAll('a'):
                     try:
                         href = link.get('href')
                         current_scheme_prefix = url.scheme + "://"
-                        if not (href.startswith('http://') or href.startswith('https://')):
+                        parsed_href = urlparse(href)
+                        if not parsed_href.netloc:
+                            href = url.netloc + href
+                            parsed_href = urlparse(href)
+                        if not parsed_href.scheme:
                             href = current_scheme_prefix + href
-                        if ".edu" in url.netloc:
+                            parsed_href = urlparse(href)
+                        if ".edu" in parsed_href.netloc:
                             add_to_queue.append(href)
-                    except:
+                    except Exception as e:
+                        print("HTML Parse failed: ", e, flush=True)
                         pass
                 return_value["urlqueue"] = add_to_queue
             elif "application/pdf" in response.headers['content-type']:
@@ -88,7 +91,8 @@ class Scraper:
                     return_value["text"] = text
                     return_value["urlqueue"] = urls_on_pdf
                 return_value["content_type"] = "pdf"
-        except:
+        except Exception as e:
+            print("get_site failed: ", e, flush=True)
             return None
         return return_value
 
@@ -98,17 +102,17 @@ class Scraper:
         :param site_data: to be added to firebase
         """
         print("add_to_firebase(" + json.dumps({
-            "response_time": site_data['response_time'],
-            "response": '...',
             "url": site_data['url'],
         }) + ")")
-        db.reference('edu_data').push(site_data)
+        db.reference('data').push({
+            "content_type": site_data["content_type"],
+            "text": site_data["text"],
+            "url": site_data["url"]
+        })
 
     @staticmethod
     def get_urls(site_data):
         print("get_urls(" + json.dumps({
-            "response_time": site_data['response_time'],
-            "response": '...',
             "url": site_data['url'],
         }) + ")")
         return site_data["urlqueue"]
@@ -121,32 +125,37 @@ class Scraper:
         print("add_url_to_queue_firebase([...len = " + str(len(urls_to_add)) + "...])")
         queue_ref = db.reference('queue')
         for url in urls_to_add:
-            existing_url = db.reference('data').order_by_child('url').equal_to(url).get()
-            if len(existing_url.keys()) == 0:
-                queue_ref.push(url)
+            try:
+                existing_url = db.reference('data').order_by_child('url').equal_to(url).get()
+                print(url + " added to queue")
+                if len(existing_url.keys()) == 0:
+                    queue_ref.push(url)
+            except Exception as e:
+                print("URL " + url + " Add to queue failed: ", e, flush=True)
+
 
     def start(self):
         has_next_url = True
         while has_next_url:
             next_element_snapshot = db.reference('queue').order_by_key().limit_to_first(1).get()
-            if len(next_element_snapshot.keys()) != 1:
-                has_next_url = False
-            else:
-                key, url = [(k, v) for k, v in next_element_snapshot.items()][0]
-                existing_url = db.reference('data').order_by_child('url').equal_to(url).get()
-                # Similar to queue 'pop' but follows eventual consistency model for multi-threading.
-                db.reference('queue/' + key).delete()
-                # Only perform request if unvisited
-                if len(existing_url.keys()) == 0:
-                    print("=========================== " + url + " ===========================")
-                    try:
+            try:
+                if len(next_element_snapshot.keys()) != 1:
+                    has_next_url = False
+                else:
+                    key, url = [(k, v) for k, v in next_element_snapshot.items()][0]
+                    existing_url = db.reference('data').order_by_child('url').equal_to(url).get()
+                    # Similar to queue 'pop' but follows eventual consistency model for multi-threading.
+                    db.reference('queue/' + key).delete()
+                    # Only perform request if unvisited
+                    if len(existing_url.keys()) == 0:
+                        print("=========================== " + url + " ===========================")
                         site_data = Scraper.get_site(url)
                         if site_data is not None:
                             Scraper.add_site_to_firebase(site_data)
                             urls_to_add = Scraper.get_urls(site_data)
                             Scraper.add_urls_to_queue_firebase(urls_to_add)
-                    except Exception as e:
-                        print("Failed: ", e, flush=True)
+            except Exception as e:
+                print("Failed: ", e, flush=True)
             time.sleep(randrange(1, 5))
 
         print("No more pages to scrape. Probably need to seed")
