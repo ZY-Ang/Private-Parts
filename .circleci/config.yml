@@ -122,7 +122,7 @@ jobs:
               FLASK_APP=backend
               FLASK_ENV=development
               GOOGLE_APPLICATION_CREDENTIALS=/home/ubuntu/backend/firebase-adminsdk.json
-              nohup python3 run > scraper.out 2> scraper.err & "
+              nohup python3 scraper.py > scraper.out 2> scraper.err & "
 
 workflows:
   version: 2
