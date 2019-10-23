@@ -1,12 +1,9 @@
 import os
 import json
-from socket import socket, AF_INET, SOCK_STREAM
-import ssl
 import firebase_admin
 from firebase_admin import credentials, db
 from urllib.parse import urlparse
 import time
-import timeit
 from random import randrange
 import re
 
@@ -35,48 +32,15 @@ class Scraper:
         url = urlparse(url_string)
         server_address = (url.hostname, 443) if url.scheme == 'https' else (url.hostname, 80)
         # Create http request
-        http_request = 'GET /' + url_string \
-            .replace(url.scheme + '://', '') \
-            .replace(url.netloc + '/', '', 1) \
-            .replace(url.netloc, '', 1) + ' HTTP/1.1\r\n'
-        http_request += 'Host: ' + url.hostname + ':' + str(80) + '\r\n'
-        http_request += 'Connection: close\r\n'
-        http_request += '\r\n'
+        response = requests.get(url_string)
 
-        # Socket and timing stuff here
-        sock = None
-        if url.scheme == 'https':
-            context = ssl.create_default_context()
-            sock = context.wrap_socket(socket(AF_INET, SOCK_STREAM), server_hostname=url.hostname)
-        else:
-            sock = socket(AF_INET, SOCK_STREAM)
-        sock.connect(server_address)
-        start = timeit.default_timer()
-        sock.sendall(http_request.encode())  # Send utf-8 up
-        response = b''
-        while True:
-            buf = sock.recv(1024)
-            if not buf:
-                break
-            response += buf
-        end = timeit.default_timer()
-        sock.close()
-        decoded_response = None
-        encodings = ['utf-8', 'latin-1']  # Apparently if you visit a chinese website utf-8 won't work
-        for encoding in encodings:
-            try:
-                decoded_response = response.decode(encoding)
-                break
-            except UnicodeDecodeError:
-                continue
+        try:
+            tree = html.fromstring(response.content)
 
-        if decoded_response is None:
-            print("Unable to decode response at " + url_string)
-            raise Exception("Unable to decode response!")
+        except:
+            return None
 
         return {
-            "response_time": end - start,
-            "response": decoded_response,
             "url": url_string
         }
 
@@ -152,13 +116,14 @@ class Scraper:
                     print("=========================== " + url + " ===========================")
                     try:
                         site_data = Scraper.get_site(url)
-                        Scraper.add_site_to_firebase(site_data)
-                        urls_to_add = Scraper.get_urls(site_data)
-                        Scraper.add_urls_to_queue_firebase(urls_to_add)
+                        if site_data is not None:
+                            Scraper.add_site_to_firebase(site_data)
+                            urls_to_add = Scraper.get_urls(site_data)
+                            Scraper.add_urls_to_queue_firebase(urls_to_add)
                     except Exception as e:
                         print("Failed: ", e, flush=True)
             # Wait 5 to 30 seconds before getting the next link (so the server can't tell I'm a bot)
-            time.sleep(randrange(5, 31))
+            time.sleep(randrange(1, 5))
 
         print("No more pages to scrape. Probably need to seed")
         return 0
