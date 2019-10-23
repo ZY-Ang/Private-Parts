@@ -109,9 +109,20 @@ jobs:
           command: |
             ssh -o StrictHostKeyChecking=no -i "~/pp-ws-key.pem" ubuntu@$SSH_HOST 'cd ~/backend && pip3 install -r requirements.txt' || true
       - run:
-          name: Start and exit
-          command: |
-            ssh -o StrictHostKeyChecking=no -i "~/pp-ws-key.pem" ubuntu@$SSH_HOST "FLASK_APP=backend FLASK_ENV=development GOOGLE_APPLICATION_CREDENTIALS=/home/ubuntu/backend/firebase-adminsdk.json nohup ~/.local/bin/flask run > flask.out 2> flask.err & "
+          name: Start Server and exit
+          command: ssh -o StrictHostKeyChecking=no -i "~/pp-ws-key.pem" ubuntu@$SSH_HOST "
+              FLASK_APP=backend
+              FLASK_ENV=development
+              GOOGLE_APPLICATION_CREDENTIALS=/home/ubuntu/backend/firebase-adminsdk.json
+              nohup ~/.local/bin/flask run > flask.out 2> flask.err & "
+      - run:
+          working_directory: ~/repo/backend
+          name: Start Scraper and exit
+          command: ssh -o StrictHostKeyChecking=no -i "~/pp-ws-key.pem" ubuntu@$SSH_HOST "
+              FLASK_APP=backend
+              FLASK_ENV=development
+              GOOGLE_APPLICATION_CREDENTIALS=/home/ubuntu/backend/firebase-adminsdk.json
+              nohup python3 run > scraper.out 2> scraper.err & "
 
 workflows:
   version: 2
