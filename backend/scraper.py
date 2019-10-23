@@ -157,7 +157,6 @@ class Scraper:
                             Scraper.add_urls_to_queue_firebase(urls_to_add)
             except Exception as e:
                 print("Failed: ", e, flush=True)
-            time.sleep(randrange(1, 5))
 
         print("No more pages to scrape. Probably need to seed")
         return 0
