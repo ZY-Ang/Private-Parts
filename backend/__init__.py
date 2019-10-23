@@ -3,12 +3,7 @@ import os
 import time
 import firebase_admin
 from firebase_admin import credentials, db
-from lxml import html
 import requests
-from urllib.parse import urlparse
-from random import randrange
-import json
-import re
 
 
 def create_app():

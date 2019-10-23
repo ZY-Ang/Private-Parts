@@ -1,11 +1,13 @@
 import os
-import json
 import firebase_admin
 from firebase_admin import credentials, db
-from urllib.parse import urlparse
+from lxml import html
 import time
+from urllib.parse import urlparse
 from random import randrange
+import json
 import re
+import requests
 
 
 class Scraper:
