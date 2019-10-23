@@ -1,9 +1,7 @@
 import os
 import firebase_admin
 from firebase_admin import credentials, db
-import time
 from urllib.parse import urlparse
-from random import randrange
 import json
 import re
 from bs4 import BeautifulSoup
