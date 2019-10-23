@@ -1,13 +1,15 @@
 import os
 import firebase_admin
 from firebase_admin import credentials, db
-from lxml import html
 import time
 from urllib.parse import urlparse
 from random import randrange
 import json
 import re
+from bs4 import BeautifulSoup
 import requests
+import PyPDF2
+import textract
 
 
 class Scraper:
@@ -32,19 +34,63 @@ class Scraper:
         """
         print("get_site(" + str(url_string) + ")")
         url = urlparse(url_string)
-        server_address = (url.hostname, 443) if url.scheme == 'https' else (url.hostname, 80)
-        # Create http request
-        response = requests.get(url_string)
+        return_value = {
+            "url": url_string,
+        }
 
         try:
-            tree = html.fromstring(response.content)
-
+            response = requests.get(url_string)
+            if "text/html" in response.headers['content-type']:
+                add_to_queue = []
+                soup = BeautifulSoup(response.content)
+                return_value["content_type"] = "html"
+                return_value["text"] = soup.body.text
+                for link in soup.findAll('a'):
+                    try:
+                        href = link.get('href')
+                        current_scheme_prefix = url.scheme + "://"
+                        if not (href.startswith('http://') or href.startswith('https://')):
+                            href = current_scheme_prefix + href
+                        if ".edu" in url.netloc:
+                            add_to_queue.append(href)
+                    except:
+                        pass
+                return_value["urlqueue"] = add_to_queue
+            elif "application/pdf" in response.headers['content-type']:
+                fileurl = "./tmp.pdf"
+                with open(fileurl, "wb") as f:
+                    f.write(response.content)
+                with open(fileurl, "rb") as f:
+                    pdf_reader = PyPDF2.PdfFileReader(f)
+                    num_pages = pdf_reader.numPages
+                    count = 0
+                    text = ""
+                    # The while loop will read each page
+                    while count < num_pages:
+                        page_object = pdf_reader.getPage(count)
+                        count += 1
+                        text += page_object.extractText()
+                    # This if statement exists to check if the above library returned #words. It's done because
+                    # PyPDF2 cannot read scanned files.
+                    if text != "":
+                        text = text
+                    # If the above returns as False, we run the OCR library textract to #convert scanned/image based
+                    # PDF files into text
+                    else:
+                        text = textract.process(fileurl, method='tesseract', language='eng')
+                    # Now we have a text variable which contains all the text derived #from our PDF file. Type print(
+                    # text) to see what it contains. It #likely contains a lot of spaces, possibly junk such as '\n'
+                    # etc. Now, we will clean our text variable, and return it as a list of keywords.
+                    all_web_or_relative_urls_regex = r'(?:(?:http|https):\/\/|www\.|ftp\.)(?:\([-A-Z0-9+&@#\/%=~_|$?!:,' \
+                                                     r'.]*\)|[-A-Z0-9+&@#\/%=~_|$?!:,.])*(?:\([-A-Z0-9+&@#\/%=~_|$?!:,' \
+                                                     r'.]*\)|[A-Z0-9+&@#\/%=~_|$])'
+                    urls_on_pdf = re.findall(all_web_or_relative_urls_regex, text, re.IGNORECASE | re.MULTILINE)
+                    return_value["text"] = text
+                    return_value["urlqueue"] = urls_on_pdf
+                return_value["content_type"] = "pdf"
         except:
             return None
-
-        return {
-            "url": url_string
-        }
+        return return_value
 
     @staticmethod
     def add_site_to_firebase(site_data):
@@ -56,39 +102,16 @@ class Scraper:
             "response": '...',
             "url": site_data['url'],
         }) + ")")
-        db.reference('data').push({
-            "response_time": site_data['response_time'],
-            "date_accessed": time.time(),
-            "url": site_data['url'],
-        })
+        db.reference('edu_data').push(site_data)
 
     @staticmethod
     def get_urls(site_data):
-        """
-        :param site_data: {response_time: <float>seconds, response: <string>httpResponse}
-        :return: list of URLs inside a given site_data response. Performs all necessary html, http parsing actions.
-        """
         print("get_urls(" + json.dumps({
             "response_time": site_data['response_time'],
             "response": '...',
             "url": site_data['url'],
         }) + ")")
-        current_scheme_prefix = urlparse(site_data['url']).scheme + "://"
-        split_response = site_data['response'].split('\r\n\r\n')
-
-        if len(split_response) >= 2:
-            # Regex from:
-            #   https://stackoverflow.com/questions/6038061/regular-expression-to-find-urls-within-a-string/54086404
-            all_web_or_relative_urls_regex = r'(?:(?:http|https):\/\/|www\.|ftp\.)(?:\([-A-Z0-9+&@#\/%=~_|$?!:,' \
-                                             r'.]*\)|[-A-Z0-9+&@#\/%=~_|$?!:,.])*(?:\([-A-Z0-9+&@#\/%=~_|$?!:,' \
-                                             r'.]*\)|[A-Z0-9+&@#\/%=~_|$])'
-            urls_on_page = re.findall(all_web_or_relative_urls_regex, split_response[1], re.IGNORECASE | re.MULTILINE)
-            for index, url in enumerate(urls_on_page):
-                if not (url.startswith('http://') or url.startswith('https://')):
-                    urls_on_page[index] = current_scheme_prefix + url
-            return urls_on_page
-
-        return []
+        return site_data["urlqueue"]
 
     @staticmethod
     def add_urls_to_queue_firebase(urls_to_add):
@@ -124,7 +147,6 @@ class Scraper:
                             Scraper.add_urls_to_queue_firebase(urls_to_add)
                     except Exception as e:
                         print("Failed: ", e, flush=True)
-            # Wait 5 to 30 seconds before getting the next link (so the server can't tell I'm a bot)
             time.sleep(randrange(1, 5))
 
         print("No more pages to scrape. Probably need to seed")
@@ -135,9 +157,7 @@ class Scraper:
 def main():
     # Just use firebase to store results.
     cred = credentials.Certificate(os.environ['GOOGLE_APPLICATION_CREDENTIALS'])
-    firebase_admin.initialize_app(cred, {
-        'databaseURL': os.environ['FIREBASE_DATABASE_URL']  # Or whatever your database URL is
-    })
+    firebase_admin.initialize_app(cred, {'databaseURL': 'https://private-parts.firebaseio.com'})
     scraper = Scraper()
     scraper.start()
 
