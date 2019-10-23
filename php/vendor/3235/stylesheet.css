@@ -1,0 +1,29 @@
+html, body {
+    height: 100%;
+}
+header .navbar {
+    background: #efefef;
+}
+header .navbar .nav-link {
+    color: #333333;
+}
+header .navbar-brand {
+    color: #333333;
+}
+#content {
+    padding-top: 80px;
+    min-height: 100%;
+}
+.btn-facebook {
+    color: #fff;
+    background: #4267B2;
+}
+.btn-facebook:hover {
+    color: #eee;
+}
+.skip {
+    cursor: pointer;
+}
+footer {
+    background: #efefef;
+}
