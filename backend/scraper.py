@@ -51,7 +51,7 @@ class Scraper:
                         if not parsed_href.scheme:
                             href = current_scheme_prefix + href
                             parsed_href = urlparse(href)
-                        if ".edu" in parsed_href.netloc:
+                        if ".edu.sg" in parsed_href.netloc or "moe.gov.sg" in parsed_href.netloc:
                             add_to_queue.append(href)
                     except Exception as e:
                         print("HTML Parse failed: ", e, flush=True)
