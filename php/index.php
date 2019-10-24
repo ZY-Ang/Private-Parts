@@ -16,7 +16,7 @@ include_once('header.php');
     <div class="row">
       <div id="form-data" class="offset-sm-3 offset-lg-3 col-sm-6 col-lg-6 text-center">
         <h1>How private are you?</h1>
-        <p class="mb-3">Find out how much the world knows about you, keep your identity safe.</p>
+        <p class="mb-3">The private parts of your life that the world knows. Do a search below!</p>
         <div id="step-1" class="form-group">
           <label>1. Enter your full name.</label>
           <div class="input-group">

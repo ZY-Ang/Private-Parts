@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 4.7.5
+-- version 4.8.5
 -- https://www.phpmyadmin.net/
 --
--- Host: 127.0.0.1
--- Generation Time: Oct 23, 2019 at 12:40 PM
--- Server version: 5.7.11
--- PHP Version: 7.0.4
+-- Host: localhost:3306
+-- Generation Time: Oct 24, 2019 at 10:07 AM
+-- Server version: 10.3.18-MariaDB
+-- PHP Version: 7.2.7
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET AUTOCOMMIT = 0;
@@ -19,7 +19,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `3235`
+-- Database: `privatepar_main`
 --
 
 -- --------------------------------------------------------
@@ -72,7 +72,7 @@ CREATE TABLE `web_data` (
   `web_data_id` int(11) NOT NULL,
   `url` text NOT NULL,
   `html` text NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -114,6 +114,7 @@ ALTER TABLE `session`
 --
 ALTER TABLE `web_data`
   ADD PRIMARY KEY (`web_data_id`);
+ALTER TABLE `web_data` ADD FULLTEXT KEY `html` (`html`);
 
 --
 -- Indexes for table `web_url`
@@ -129,31 +130,31 @@ ALTER TABLE `web_url`
 -- AUTO_INCREMENT for table `hibp_data`
 --
 ALTER TABLE `hibp_data`
-  MODIFY `hibp_data_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1888;
+  MODIFY `hibp_data_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `instagram_data`
 --
 ALTER TABLE `instagram_data`
-  MODIFY `instagram_data_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `instagram_data_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `session`
 --
 ALTER TABLE `session`
-  MODIFY `session_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
+  MODIFY `session_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `web_data`
 --
 ALTER TABLE `web_data`
-  MODIFY `web_data_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=66;
+  MODIFY `web_data_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `web_url`
 --
 ALTER TABLE `web_url`
-  MODIFY `web_url_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1218;
+  MODIFY `web_url_id` int(11) NOT NULL AUTO_INCREMENT;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

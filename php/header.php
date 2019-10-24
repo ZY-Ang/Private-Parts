@@ -31,6 +31,9 @@
         <li class="nav-item">
           <a class="nav-link" href="about.php">About</a>
         </li>
+        <li class="nav-item">
+          <a class="nav-link" href="education.php">Education</a>
+        </li>
       </ul>
     </div>
   </nav>

@@ -11,7 +11,7 @@ include_once('header.php');
     <div class="row">
       <div class="col-12">
         <h1>About Private Parts</h1>
-        <p>Private Parts is a security tool to help you find the parts of your private information are being leaked online.<br />
+        <p>Private Parts is a tool to help you find the parts of your private information that are being leaked online.<br />
 <br />
 This web application allows you to find out how much stalkers can find out about you and identifies vulnerabilities in your public profile which you might want to keep private.</p>
       </div>

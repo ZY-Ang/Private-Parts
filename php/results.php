@@ -10,11 +10,11 @@ $description = '';
 $session_id = isset($_GET['session_id']) ? $_GET['session_id'] : 0;
 $signature = isset($_GET['signature']) ? $_GET['signature'] : '';
 
-if (hash_equals($signature, sha1($session_id . RESULTS_KEY . $session_id))) {
+$query = $db->query("SELECT * FROM session WHERE session_id = '" . (int)$session_id . "'");
+
+if (hash_equals($signature, sha1($session_id . RESULTS_KEY . $session_id)) && $query->row) {
     $valid = true;
-    
-    $query = $db->query("SELECT * FROM session WHERE session_id = '" . (int)$session_id . "'");
-    
+        
     $name = $query->row['name'];
     $instagram = $query->row['instagram'];
     $facebook = $query->row['facebook'];
@@ -72,8 +72,8 @@ if (hash_equals($signature, sha1($session_id . RESULTS_KEY . $session_id))) {
         );
     }
     
-    $name_query = $db->query("SELECT url FROM web_data WHERE html LIKE '%" . $db->escape($name) . "%'");
-    
+    $name_query = $db->query("SELECT url, MATCH(html) AGAINST ('" . $db->escape($name) . "') AS score FROM web_data WHERE MATCH(html) AGAINST ('" . $db->escape($name) . "') ORDER BY score DESC LIMIT 30");
+
     $name_data = array();
     
     foreach ($name_query->rows as $result) {
@@ -85,6 +85,11 @@ if (hash_equals($signature, sha1($session_id . RESULTS_KEY . $session_id))) {
     } else {
         $breached = false;
     }
+    
+    // Clear data
+    $db->query("DELETE FROM session WHERE session_id = '" . (int)$session_id . "'");
+    $db->query("DELETE FROM instagram_data WHERE session_id = '" . (int)$session_id . "'");
+    $db->query("DELETE FROM hibp_data WHERE session_id = '" . (int)$session_id . "'");
 } else {
     $valid = false;
 }

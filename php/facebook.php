@@ -60,11 +60,29 @@ if (isset($_GET['code'])) {
         }
     }
     
-    $name = isset($_GET['name']) ? $_GET['name'] : '';
-    $email = isset($_GET['email']) ? $_GET['email'] : '';
-    $instagram = isset($_GET['instagram']) ? $_GET['instagram'] : '';
+    $name = '';
+    $email = '';
+    $instagram = '';
     
-    $redirect_url = rawurlencode(BASE . 'index.php?step=5&name=' . rawurlencode($name) . '&email=' . rawurlencode($email) . '&instagram=' . rawurlencode($instagram));
+    if (isset($_GET['state'])) {
+        $state = rawurldecode($_GET['state']);
+        
+        $states = explode('&', $state);
+        
+        foreach ($states as $state) {
+            $data = explode('=', $state);
+            
+            if ($data[0] == 'name') {
+                $name = $data[1];
+            } elseif ($data[0] == 'email') {
+                $email = $data[1];
+            } elseif ($data[0] == 'instagram') {
+                $instagram = $data[1];
+            }
+        }
+    }
+    
+    $redirect_url = BASE . 'index.php?step=5&name=' . rawurlencode($name) . '&email=' . rawurlencode($email) . '&instagram=' . rawurlencode($instagram);
     
     header('Location: ' . $redirect_url);
 } else {
@@ -72,7 +90,8 @@ if (isset($_GET['code'])) {
     $email = isset($_GET['email']) ? $_GET['email'] : '';
     $instagram = isset($_GET['instagram']) ? $_GET['instagram'] : '';
     
-    $redirect_url = rawurlencode(BASE . 'facebook.php?name=' . rawurlencode($name) . '&email=' . rawurlencode($email) . '&instagram=' . rawurlencode($instagram));
-    
-    header('Location: https://www.facebook.com/v2.12/dialog/oauth?client_id=' . FB_APP_ID . '&redirect_uri=' . $redirect_url . '&scope=email&display=page');
+    $redirect_url = BASE . 'facebook.php';
+    $state = rawurlencode('name=' . rawurlencode($name) . '&email=' . rawurlencode($email) . '&instagram=' . rawurlencode($instagram));
+
+    header('Location: https://www.facebook.com/v2.12/dialog/oauth?client_id=' . FB_APP_ID . '&redirect_uri=' . $redirect_url . '&scope=email&display=page&state=' . $state);
 }
