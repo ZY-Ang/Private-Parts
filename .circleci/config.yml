@@ -113,15 +113,15 @@ jobs:
           command: ssh -o StrictHostKeyChecking=no -i "~/pp-ws-key.pem" ubuntu@$SSH_HOST "
               FLASK_APP=backend
               FLASK_ENV=development
-              GOOGLE_APPLICATION_CREDENTIALS=/home/ubuntu/backend/firebase-adminsdk.json
-              nohup ~/.local/bin/flask run > flask.out 2> flask.err & "
-      - run:
-          name: Start Scraper and exit
-          command: ssh -o StrictHostKeyChecking=no -i "~/pp-ws-key.pem" ubuntu@$SSH_HOST "
-              FLASK_APP=backend
-              FLASK_ENV=development
-              GOOGLE_APPLICATION_CREDENTIALS=/home/ubuntu/backend/firebase-adminsdk.json
-              nohup python3 ~/backend/scraper.py > scraper.out 2> scraper.err & "
+              nohup /usr/bin/python3 ~/.local/bin/flask run > flask.out 2> flask.err & "
+#              GOOGLE_APPLICATION_CREDENTIALS=/home/ubuntu/backend/firebase-adminsdk.json
+#      - run:
+#          name: Start Scraper and exit
+#          command: ssh -o StrictHostKeyChecking=no -i "~/pp-ws-key.pem" ubuntu@$SSH_HOST "
+#              FLASK_APP=backend
+#              FLASK_ENV=development
+#              GOOGLE_APPLICATION_CREDENTIALS=/home/ubuntu/backend/firebase-adminsdk.json
+#              nohup python3 ~/backend/scraper.py > scraper.out 2> scraper.err & "
 
 workflows:
   version: 2
@@ -133,11 +133,11 @@ workflows:
               only:
                 - master
                 - ci
-      - webapp_build_deploy:
-          filters:
-            branches:
-              only:
-                - master
-                - ci
-          requires:
-            - server_deploy
+#      - webapp_build_deploy:
+#          filters:
+#            branches:
+#              only:
+#                - master
+#                - ci
+#          requires:
+#            - server_deploy

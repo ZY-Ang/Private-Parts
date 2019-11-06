@@ -1,10 +1,8 @@
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, jsonify, request, send_from_directory, g
 import os
 import time
-import firebase_admin
-from firebase_admin import credentials, db
+import pickle
 import requests
-
 
 def create_app():
     """Create and configure an instance of the Flask application."""
@@ -12,35 +10,9 @@ def create_app():
     app.secret_key = b'cs3235privatepartsyo'
 
     # Initialize firebase
-    cred = credentials.Certificate(os.environ['GOOGLE_APPLICATION_CREDENTIALS'])
-    firebase_admin.initialize_app(cred, {'databaseURL': 'https://private-parts.firebaseio.com'})
     # register api commands
     from . import api
     app.register_blueprint(api.bp)
-
-    @app.route('/tasks')
-    def tasks():
-        # Use the firebase admin for python docs for "realtime database"
-        tasks_snapshot = db.reference('tasks').get()
-        return jsonify(tasks_snapshot)
-
-    @app.route('/team', methods=['GET', 'POST'])
-    def add_team():
-        if request.method == 'POST':
-            team = [
-                "Alex",
-                "Mingxian",
-                "Zixian",
-                "Jasmund",
-                "Esmond"
-            ]
-            for member in team:
-                # .push creates an auto id, sortable by insertion order.
-                db.reference('team').push({
-                    "name": member,
-                    "timestamp": time.time()
-                })
-        return jsonify(db.reference('team').get())
 
     @app.route('/pwn/<path:route>')
     def pwn(route):
@@ -61,9 +33,5 @@ def create_app():
             return send_from_directory(app.static_folder, path)
         else:
             return send_from_directory(app.static_folder, 'index.html')
-
-    # @app.errorhandler(404)
-    # def error404():
-    #     return send_from_directory(app.static_folder, 'index.html')
 
     return app

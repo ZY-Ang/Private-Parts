@@ -1,14 +1,15 @@
+import PyPDF2
+import textract
 import os
+import json
+import re
+import requests
+import time
 import firebase_admin
 from firebase_admin import credentials, db
 from urllib.parse import urlparse
-import json
-import re
 from bs4 import BeautifulSoup
-import requests
-import PyPDF2
-import textract
-
+from fake_useragent import UserAgent
 
 class Scraper:
     @staticmethod
@@ -160,14 +161,139 @@ class Scraper:
         return 0
 
 
-# To multi-thread, just run more times e.g. python3 __main__.py & python3 __main__.py & python3 __main__.py & ...
-def main():
-    # Just use firebase to store results.
-    cred = credentials.Certificate(os.environ['GOOGLE_APPLICATION_CREDENTIALS'])
-    firebase_admin.initialize_app(cred, {'databaseURL': 'https://private-parts.firebaseio.com'})
-    scraper = Scraper()
-    scraper.start()
+# # To multi-thread, just run more times e.g. python3 __main__.py & python3 __main__.py & python3 __main__.py & ...
+# def main():
+#     # Just use firebase to store results.
+#     cred = credentials.Certificate(os.environ['GOOGLE_APPLICATION_CREDENTIALS'])
+#     firebase_admin.initialize_app(cred, {'databaseURL': 'https://private-parts.firebaseio.com'})
+#     scraper = Scraper()
+#     scraper.start()
+#
+#
+# if __name__ == '__main__':
+#     main()
 
 
-if __name__ == '__main__':
-    main()
+
+
+class TextScraper:
+    def __init__(self):
+        self.ua = UserAgent()
+
+    def clean_html(self, soup):
+        """
+        Remove all javascript and stylesheet code and
+        cleanup whitespaces
+        """
+
+        # remove all javascript and stylesheet code
+        for script in soup(["script", "style"]):
+            script.extract()
+
+        text = soup.get_text()
+        # break into lines and remove leading and trailing space on each
+        lines = (line.strip() for line in text.splitlines())
+        # break multi-headlines into a line each
+        chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
+        # drop blank lines
+        text = ' '.join(chunk for chunk in chunks if chunk)
+        return text
+
+    def generate_header(self):
+        headers = {
+            "accept" : "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+            "accept-encoding" : "gzip, deflate, sdch, br",
+            "accept-language" : "en-US,en;q=0.8,ms;q=0.6",
+            "user-agent" : self.ua.random
+        }
+        return headers
+
+    def scrape_site(self, url_string):
+        """
+        :param url_string: A url to be accessed
+        :return: site data for a given urlString. Performs all necessary low level socket-http stuff
+        """
+        print("get_site(" + str(url_string) + ")")
+        url = urlparse(url_string)
+        return_value = {
+            "url": url_string,
+        }
+
+        try:
+            headers = self.generate_header()
+            response = requests.get(url_string, verify=False, headers=headers)
+            if "text/html" in response.headers['content-type']:
+                add_to_queue = []
+                soup = BeautifulSoup(response.content, "html.parser")
+                return_value["content_type"] = "html"
+                return_value["text"] = self.clean_html(soup)
+
+                for link in soup.findAll('a'):
+                    try:
+                        href = link.get('href')
+                        current_scheme_prefix = url.scheme + "://"
+                        parsed_href = urlparse(href)
+                        if not parsed_href.netloc:
+                            href = url.netloc + href
+                            parsed_href = urlparse(href)
+                        if not parsed_href.scheme:
+                            href = current_scheme_prefix + href
+                            parsed_href = urlparse(href)
+                        if not "instagram.com" in parsed_href.netloc:
+                            add_to_queue.append(href)
+                    except Exception as e:
+                        print("HTML Parse failed: ", e, flush=True)
+                        pass
+                return_value["urlqueue"] = add_to_queue
+
+        except Exception as e:
+            print("get_site failed: ", e, flush=True)
+            return None
+        return return_value
+
+    def get_urls(self, site_data):
+        print("get_urls(" + json.dumps({
+            "url": site_data['url'],
+        }) + ")")
+        return site_data["urlqueue"]
+
+    def start(self, main_url_list, full_name_caps, full_name_lower, time_limit=1):
+        """
+        Each url in the the main_url_list is a site found from google search
+        Each url in the sub_url_list is a site found from a url in the main_url_list
+        If for time_limit seconds we cannot find anything relevant we stop searching in this "domain"
+        Go to the next url in the main_url_list
+        """
+        sub_url_list = []
+        visited_url_list = []
+        start_time = time.time()
+        text = []
+        url_found = set()
+        while len(main_url_list) > 0 or len(sub_url_list) > 0:
+            try:
+                url = None
+                if len(sub_url_list) > 0:
+                    url = sub_url_list.pop(0)
+                elif len(main_url_list) > 0:
+                    url = main_url_list.pop(0)
+                print(url)
+                visited_url_list.append(url)
+                print("=========================== " + url + " ===========================")
+                site_data = self.scrape_site(url)
+                if site_data is not None:
+                    for site in site_data["urlqueue"]:
+                        if site not in visited_url_list:
+                            sub_url_list.append(site)
+                        if all(name in site_data["text"] for name in full_name_caps) or all(name in site_data["text"] for name in full_name_lower):
+                            # reset timer if we found something related
+                            start_time = time.time()
+                            url_found.add(site_data["url"])
+                            text.append(site_data["text"])
+                time_taken = time.time() - start_time
+                if time_taken > time_limit:
+                    sub_url_list.clear()
+            except Exception as e:
+                print("Failed: ", e, flush=True)
+
+        print("No more pages to scrape. Probably need to seed")
+        return text, url_found

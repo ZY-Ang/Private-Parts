@@ -2,6 +2,8 @@
 # Created by https://www.gitignore.io/api/node,macos,python,windows,pycharm,webstorm,firebase,serverless,webstorm+all,webstorm+iml,visualstudiocode
 # Edit at https://www.gitignore.io/?templates=node,macos,python,windows,pycharm,webstorm,firebase,serverless,webstorm+all,webstorm+iml,visualstudiocode
 
+backend/.google-cookie
+
 ### Firebase ###
 .idea
 **/node_modules/*
