@@ -73,7 +73,7 @@ python-debian==0.1.32
 python-pptx==0.6.18
 pytz==2019.3
 pyxdg==0.25
-PyYAML==3.12
+PyYAML==5.4
 requests==2.22.0
 requests-unixsocket==0.1.5
 rsa==4.0
